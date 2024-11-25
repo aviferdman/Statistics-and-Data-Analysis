@@ -12,19 +12,33 @@ import matplotlib.pyplot as plt
 
 ### Question 1 ###
 
-def find_sample_size_binom():
+def find_sample_size_binom(p=0.03, x=1, alpha=0.85):
     """
     Using Binom to returns the minimal number of samples required to have requested probability of receiving 
     at least x defective products from a production line with a defective rate.
     """
-    pass
+    n = x
+    cdf = stats.binom.cdf(x - 1, n, p)
+    while(1 - cdf < alpha):
+        n += 1
+        cdf = stats.binom.cdf(x - 1, n, p)
+    
+    return n
 
-def find_sample_size_nbinom():
+def find_sample_size_nbinom(p=0.03, x=1, alpha=0.85):
     """
     Using NBinom to returns the minimal number of samples required to have requested probability of receiving 
     at least x defective products from a production line with a defective rate.
     """
-    pass
+    n = x
+    cdf = stats.nbinom.cdf(x - 1, n, p)
+    while(1 - cdf < alpha):
+        n += 1
+        cdf = stats.nbinom.cdf(x - 1, n, p)
+    
+    return n
+
+find_sample_size_nbinom()
 
 def compare_q1():
     pass
