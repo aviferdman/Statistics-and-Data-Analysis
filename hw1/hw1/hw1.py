@@ -38,8 +38,6 @@ def find_sample_size_nbinom(p=0.03, x=1, alpha=0.85):
     
     return n
 
-find_sample_size_nbinom()
-
 def compare_q1():
     pass
 
