@@ -145,7 +145,10 @@ def evenBinom(n, p):
     Returns:
     - prob: The output probability.
     """
-    
+    prob = 0
+    for i in range(0, n + 1, 2):
+        prob += stats.binom(n, p).pmf(i)
+
     return prob
 
 def evenBinomFormula(n, p):
@@ -160,7 +163,19 @@ def evenBinomFormula(n, p):
     - prob: The output probability.
     """
     
-    return prob
+    explanation = "1. For any a, b -> (a+b)^n = sum(k=0 to n) (n choose k) * a^k * b^(n-k)\n"
+    explanation += "2. let a1 = p and b1 = 1 - p. Then (a1+b1)^n = sum(k=0 to n) (n choose k) * p^k * (1-p)^(n-k)\n"
+    explanation += "3. Even k + Odds k = 1\n"
+    explanation += "4. let a2 = p and b2 = (-1) * (1 - p).\n"
+    explanation += "5. (a2+b2)^n = sum(k=0 to n) (n choose k) * p^k * (-1)(1-p)^(n-k)\n"
+    explanation += "6. sum(k=0 to n) (n choose k) * p^k * (-1)(1-p)^(n-k) = Even k - Odd k\n"
+    explanation += "7. (a2+b2)^n = (p - (1 - p))^n = (2p - 1)^n.\n"
+    explanation += "8. from 7, 6, 3 => 2 * Even k = 1 + (2p - 1)^n\n"
+    explanation += "9. Even k = (1 + (2p - 1)^n) / 2\n"
+
+    print(explanation)
+
+    return (1 + ((2*p - 1)**n)) / 2 # TODO: validate the explanation is for even and not for odd
 
 ### Question 5 ###
 
