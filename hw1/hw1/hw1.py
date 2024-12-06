@@ -1,9 +1,9 @@
 ###### Your ID ######
-# ID1: 
-# ID2: 
+# ID1:
+# ID2:
 #####################
 
-# imports 
+# imports
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 def find_sample_size_binom(p=0.03, x=1, alpha=0.85):
     """
-    Using Binom to returns the minimal number of samples required to have requested probability of receiving 
+    Using Binom to returns the minimal number of samples required to have requested probability of receiving
     at least x defective products from a production line with a defective rate.
     """
     n = x  # Start with the minimum number of samples equal to x
@@ -22,12 +22,12 @@ def find_sample_size_binom(p=0.03, x=1, alpha=0.85):
     while(1 - cdf < alpha):  # Check if the probability condition is met
         n += 1  # Increment the number of samples
         cdf = stats.binom.cdf(x - 1, n, p)  # Recalculate CDF for the updated sample size
-    
+
     return n  # Return the minimal number of samples
 
 def find_sample_size_nbinom(p=0.03, x=1, alpha=0.85):
     """
-    Using NBinom to returns the minimal number of samples required to have requested probability of receiving 
+    Using NBinom to returns the minimal number of samples required to have requested probability of receiving
     at least x defective products from a production line with a defective rate.
     """
     n = x  # Start with the minimum number of samples equal to x
@@ -35,7 +35,7 @@ def find_sample_size_nbinom(p=0.03, x=1, alpha=0.85):
     while(1 - cdf < alpha):  # Check if the probability condition is met
         n += 1  # Increment the number of samples
         cdf = stats.nbinom.cdf(x - 1, n, p)  # Recalculate CDF for the updated sample size
-    
+
     return n  # Return the minimal number of samples
 
 def compare_q1():
@@ -51,7 +51,7 @@ def same_prob(p=0.1, x=5, alpha=0.9):
     # Raise an exception if alpha is 0 to prevent invalid probability comparisons
     if alpha == 0:
         raise ValueError("Alpha cannot be 0. Please provide a non-zero value.")
-    
+
     n = x  # Start with the minimum number of samples equal to x
     # Compute probabilities for both distributions
     prob_binom = 1 - stats.binom.cdf(x - 1, n, p)
@@ -66,14 +66,14 @@ def same_prob(p=0.1, x=5, alpha=0.9):
         prob_nbinom = 1 - stats.nbinom.cdf(x - 1, n, p)  # Recompute Negative Binomial probability
         # Reevaluate the condition for probabilities being close
         is_same_prob = np.isclose(prob_binom, prob_nbinom, atol=1e-2) and prob_binom > alpha and prob_nbinom > alpha
-    
+
     return n  # Return the sample size where probabilities match
 
 ### Question 2 ###
 
 def empirical_centralized_third_moment(n=20, p=[0.2, 0.1, 0.1, 0.1, 0.2, 0.3]):
     """
-    Create k=100 experiments where X is sampled. Calculate the empirical centralized third moment of Y based 
+    Create k=100 experiments where X is sampled. Calculate the empirical centralized third moment of Y based
     on your k experiments.
     """
     k = 100
@@ -86,30 +86,30 @@ def empirical_centralized_third_moment(n=20, p=[0.2, 0.1, 0.1, 0.1, 0.2, 0.3]):
     X_k = multinomial_dist.rvs(size=k)
     for X_i in X_k:
         Y = X_i[1] + X_i[2] + X_i[3]
-        centralized_moments.append((Y - mean_Y) ** 3) 
+        centralized_moments.append((Y - mean_Y) ** 3)
 
     empirical_third_moment = np.mean(centralized_moments)
-    
+
     return empirical_third_moment
 
 def class_moment():
-    
+
     return moment
 
 def plot_moments():
-    
+
     return dist_var
-    
+
 def plot_moments_smaller_variance():
-    
+
     return dist_var
-    
-    
+
+
 ### Question 3 ###
 
 def NFoldConv(P, n):
     """
-    Calculating the distribution, Q, of the sum of n independent repeats of random variables, 
+    Calculating the distribution, Q, of the sum of n independent repeats of random variables,
     each of which has the distribution P.
 
     Input:
@@ -119,9 +119,25 @@ def NFoldConv(P, n):
     Returns:
     - Q: 2d numpy array: [[values], [probabilities]].
     """
-    
+    if n == 1:
+        return P
+
+    # create np array representin the distibution function starting at 0
+    offset = -P[0].min()
+    size = P[0].max() - P[0].min() + 1
+    probs = np.zeros(int(size))
+
+    for i in range(len(P[0])):
+        probs[int(P[0][i] + offset)] = P[1][i]
+
+    # Convolve - P*P*P... (n-1 times)
+    results = probs
+    for _ in range(n-1):
+        results = np.convolve(results, probs)
+
+    Q = np.vstack([np.arange(len(results))-offset*n, results])
     return Q
-    
+
 def plot_dist(P):
     """
     Ploting the distribution P using barplot.
@@ -129,8 +145,13 @@ def plot_dist(P):
     Input:
     - P: 2d numpy array: [[values], [probabilities]].
     """
-    
-    pass
+
+    plt.figure(figsize=(8,6))
+    plt.bar(P[0], P[1])
+
+    plt.xlabel("Values")
+    plt.ylabel("Probability")
+    plt.show()
 
 
 ### Qeustion 4 ###
@@ -138,7 +159,7 @@ def plot_dist(P):
 def evenBinom(n, p):
     """
     The program outputs the probability P(X\ is\ even) for the random variable X~Binom(n, p).
-    
+
     Input:
     - n, p: The parameters for the binomial distribution.
 
@@ -155,14 +176,14 @@ def evenBinomFormula(n, p):
     """
     The program outputs the probability P(X\ is\ even) for the random variable X~Binom(n, p) Using a closed-form formula.
     It should also print the proof for the formula.
-    
+
     Input:
     - n, p: The parameters for the binomial distribution.
 
     Returns:
     - prob: The output probability.
     """
-    
+
     explanation = "1. For any a, b -> (a+b)^n = sum(k=0 to n) (n choose k) * a^k * b^(n-k)\n"
     explanation += "2. let a1 = p and b1 = 1 - p. Then (a1+b1)^n = sum(k=0 to n) (n choose k) * p^k * (1-p)^(n-k)\n"
     explanation += "3. Even k + Odds k = 1\n"
@@ -181,37 +202,37 @@ def evenBinomFormula(n, p):
 
 def three_RV(X, Y, Z):
     """
- 
-    Input:          
-    - X: 2d numpy array: [[values], [probabilities]].
-    - Y: 2d numpy array: [[values], [probabilities]].
-    - Z: 2d numpy array: [[values], [probabilities]].
-    
-    Returns:
-    - v: The variance of X + Y + Z.
-    """
-    
-    return v
 
-def three_RV_pairwise_independent(X, Y, Z):
-    """
- 
     Input:
     - X: 2d numpy array: [[values], [probabilities]].
     - Y: 2d numpy array: [[values], [probabilities]].
     - Z: 2d numpy array: [[values], [probabilities]].
-    
+
     Returns:
     - v: The variance of X + Y + Z.
     """
-    
+
+    return v
+
+def three_RV_pairwise_independent(X, Y, Z):
+    """
+
+    Input:
+    - X: 2d numpy array: [[values], [probabilities]].
+    - Y: 2d numpy array: [[values], [probabilities]].
+    - Z: 2d numpy array: [[values], [probabilities]].
+
+    Returns:
+    - v: The variance of X + Y + Z.
+    """
+
     return v
 
 def is_pairwise_collectively(values, probs):
-    """ 
+    """
     See explanation in the notebook
     """
-    
+
     pass
 
 
@@ -230,16 +251,16 @@ def expectedC(n, p):
     """
     The program outputs the expected value of the RV C as defined in the notebook.
     """
-    
+
     # Initialize the expected value of C to zero
     expected_C = 0
-    
+
     # Loop over all possible numbers of successes (0 to n)
     for i in range(n + 1):
         # Compute the probability of exactly i successes in n trials:
         # P(Y = i) = (n choose i) * (p^i) * ((1 - p)^(n - i))
         p_y_i = n_choose_i(n, i) * (p ** i) * ((1 - p) ** (n - i))
-        
+
         # Compute the contribution to E[C] for this number of successes:
         # Contribution = (n choose i) * P(Y = i)
         expected_C += n_choose_i(n, i) * p_y_i
@@ -257,9 +278,8 @@ def expectedC(n, p):
 
 
 
-    
-    
-    
-    
-    
-    
+
+
+
+
+
