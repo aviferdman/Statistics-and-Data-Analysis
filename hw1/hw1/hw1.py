@@ -200,41 +200,125 @@ def evenBinomFormula(n, p):
 
 ### Question 5 ###
 
-def three_RV(X, Y, Z):
+def expected_value(values, probabilities):
+    expected_value = 0
+    for i in range(len(values)):
+        expected_value += values[i] * probabilities[i]
+    
+    return expected_value
+
+def variance(values, probabilities):
+    E_X2 = expected_value([x**2 for x in values], probabilities)
+    E2_X = expected_value(values, probabilities) ** 2
+    
+    return E_X2 - E2_X
+
+def three_RV(X, Y, Z, joint_probs):
+    """
+ 
+    Input:          
+    - X: 2d numpy array: [[values], [probabilities]].
+    - Y: 2d numpy array: [[values], [probabilities]].
+    - Z: 2d numpy array: [[values], [probabilities]].
+    - joint_probs: 3d numpy array: joint probability of X, Y and Z
+    
+    Returns:
+    - v: The variance of X + Y + Z.
+    """
+
+    # V(X+Y+Z) = V(X)+V(Y)+V(Z)+2E(XY)+2E(XZ)+2E(YZ)-2E(X)E(Y)-2E(X)E(Z)-2E(Y)E(Z)
+
+    V_X = variance(X[0], X[1])
+    V_Y = variance(Y[0], Y[1])
+    V_Z = variance(Z[0], Z[1])
+
+    E_XY = 0
+    E_XZ = 0
+    E_YZ = 0
+    
+    for i, x in enumerate(X[0]):
+        for j, y in enumerate(Y[0]):
+            for k, z in enumerate(Z[0]):
+                p_xyz = joint_probs[i, j, k]
+                E_XY += x * y * p_xyz
+                E_XZ += x * z * p_xyz
+                E_YZ += y * z * p_xyz
+    
+    E_X = expected_value(X[0], X[1])
+    E_Y = expected_value(Y[0], Y[1])
+    E_Z = expected_value(Z[0], Z[1])
+
+    v = V_X + V_Y + V_Z + 2*E_XY + 2*E_XZ + 2*E_YZ - 2*E_X*E_Y - 2*E_X*E_Z - 2*E_Y*E_Z
+
+    return v
+
+def three_RV_pairwise_independent(X, Y, Z, joint_probs):
+    """
+ 
+    Input:
+    - X: 2d numpy array: [[values], [probabilities]].
+    - Y: 2d numpy array: [[values], [probabilities]].
+    - Z: 2d numpy array: [[values], [probabilities]].
+    - joint_probs: 3d numpy array: joint probability of X, Y and Z
+    
+    Returns:
+    - v: The variance of X + Y + Z.
+    """
+
+    # V(X+Y+Z) = V(X) + V(Y) + V(Z)
+
+    V_X = variance(X[0], X[1])
+    V_Y = variance(Y[0], Y[1])
+    V_Z = variance(Z[0], Z[1])
+
+    v = V_X + V_Y + V_Z
+
+    return v
+
+def is_pairwise_collectively(X, Y, Z, joint_probs):
     """
 
     Input:
     - X: 2d numpy array: [[values], [probabilities]].
     - Y: 2d numpy array: [[values], [probabilities]].
     - Z: 2d numpy array: [[values], [probabilities]].
-
+    - joint_probs: 3d numpy array: joint probability of X, Y and Z
+    
     Returns:
-    - v: The variance of X + Y + Z.
+    TRUE or FALSE
     """
 
-    return v
+    P_X = np.sum(joint_probs, axis=(1, 2))  # Sums over Y and Z dimensions
+    
+    P_Y = np.sum(joint_probs, axis=(0, 2))  # Sums over X and Z dimensions
+    
+    P_Z = np.sum(joint_probs, axis=(0, 1))  # Sums over X and Y dimensions
 
-def three_RV_pairwise_independent(X, Y, Z):
-    """
+    for i in range(len(X[0])):
+        for j in range(len(Y[0])):
+            joint_p_XY = joint_probs[i, j, :]
+            marginal_p_XY = P_X[i] * P_Y[j]
+            
+            if not np.allclose(joint_p_XY, marginal_p_XY):
+                return False
+            
+    for i in range(len(X[0])):
+        for k in range(len(Z[0])):
+            joint_p_XZ = joint_probs[i, :, k]
+            marginal_p_XZ = P_X[i] * P_Z[k]
+            
+            if not np.allclose(joint_p_XZ, marginal_p_XZ):
+                return False
+            
+    for j in range(len(Y[0])):
+        for k in range(len(Z[0])):
+            joint_p_YZ = joint_probs[:, j, k]
+            marginal_p_YZ = P_Y[j] * P_Z[k]
+            
+            if not np.allclose(joint_p_YZ, marginal_p_YZ):
+                return False
 
-    Input:
-    - X: 2d numpy array: [[values], [probabilities]].
-    - Y: 2d numpy array: [[values], [probabilities]].
-    - Z: 2d numpy array: [[values], [probabilities]].
-
-    Returns:
-    - v: The variance of X + Y + Z.
-    """
-
-    return v
-
-def is_pairwise_collectively(values, probs):
-    """
-    See explanation in the notebook
-    """
-
-    pass
-
+    return True
 
 ### Question 6 ###
 
