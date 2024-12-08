@@ -71,12 +71,14 @@ def same_prob(p=0.1, x=5, alpha=0.9):
 
 ### Question 2 ###
 
-def empirical_centralized_third_moment(n=20, p=[0.2, 0.1, 0.1, 0.1, 0.2, 0.3]):
+def empirical_centralized_third_moment(n=20, p=[0.2, 0.1, 0.1, 0.1, 0.2, 0.3], k=100, seed=None):
     """
-    Create k=100 experiments where X is sampled. Calculate the empirical centralized third moment of Y based
+    Create k experiments where X is sampled. Calculate the empirical centralized third moment of Y based
     on your k experiments.
     """
-    k = 100
+    if seed:
+        np.random.seed(seed)
+
     centralized_moments = []
 
     multinomial_dist = stats.multinomial(n, p)
@@ -92,17 +94,36 @@ def empirical_centralized_third_moment(n=20, p=[0.2, 0.1, 0.1, 0.1, 0.2, 0.3]):
 
     return empirical_third_moment
 
-def class_moment():
+def class_moment(n=20, p=[0.2, 0.1, 0.1, 0.1, 0.2, 0.3]):
+    # Y = X2 + X3 + X4 so:
+    p_Y = p[1] + p[2] + p[3]
+
+    # We saw in class that the third moment of a binomial is:
+    # np(1-p)(1-2p)
+
+    moment = n*p_Y*(1-p_Y)*(1-2*p_Y)
 
     return moment
 
-def plot_moments():
+def plot_moments(experiments=1000, bins=30, n=20, p=[0.2, 0.1, 0.1, 0.1, 0.2, 0.3], k=100, seed=None):
+    moments = []
+
+    for _ in range(experiments):
+        moments.append(empirical_centralized_third_moment(n=n, p=p, k=k, seed=seed))
+
+    plt.hist(moments, bins=bins, edgecolor='black', alpha=0.7)
+    plt.xlabel("Experiment 3rd moment")
+    plt.ylabel("count")
+    calc_3rd_mom = class_moment(n,p)
+    plt.axvline(calc_3rd_mom, color='red', linestyle='--')
+    plt.show()
+
+    dist_var = float(np.var(moments))
 
     return dist_var
 
 def plot_moments_smaller_variance():
-
-    return dist_var
+    return plot_moments(k=10000)
 
 
 ### Question 3 ###
@@ -204,24 +225,24 @@ def expected_value(values, probabilities):
     expected_value = 0
     for i in range(len(values)):
         expected_value += values[i] * probabilities[i]
-    
+
     return expected_value
 
 def variance(values, probabilities):
     E_X2 = expected_value([x**2 for x in values], probabilities)
     E2_X = expected_value(values, probabilities) ** 2
-    
+
     return E_X2 - E2_X
 
 def three_RV(X, Y, Z, joint_probs):
     """
- 
-    Input:          
+
+    Input:
     - X: 2d numpy array: [[values], [probabilities]].
     - Y: 2d numpy array: [[values], [probabilities]].
     - Z: 2d numpy array: [[values], [probabilities]].
     - joint_probs: 3d numpy array: joint probability of X, Y and Z
-    
+
     Returns:
     - v: The variance of X + Y + Z.
     """
@@ -235,7 +256,7 @@ def three_RV(X, Y, Z, joint_probs):
     E_XY = 0
     E_XZ = 0
     E_YZ = 0
-    
+
     for i, x in enumerate(X[0]):
         for j, y in enumerate(Y[0]):
             for k, z in enumerate(Z[0]):
@@ -243,7 +264,7 @@ def three_RV(X, Y, Z, joint_probs):
                 E_XY += x * y * p_xyz
                 E_XZ += x * z * p_xyz
                 E_YZ += y * z * p_xyz
-    
+
     E_X = expected_value(X[0], X[1])
     E_Y = expected_value(Y[0], Y[1])
     E_Z = expected_value(Z[0], Z[1])
@@ -254,13 +275,13 @@ def three_RV(X, Y, Z, joint_probs):
 
 def three_RV_pairwise_independent(X, Y, Z, joint_probs):
     """
- 
+
     Input:
     - X: 2d numpy array: [[values], [probabilities]].
     - Y: 2d numpy array: [[values], [probabilities]].
     - Z: 2d numpy array: [[values], [probabilities]].
     - joint_probs: 3d numpy array: joint probability of X, Y and Z
-    
+
     Returns:
     - v: The variance of X + Y + Z.
     """
@@ -283,38 +304,38 @@ def is_pairwise_collectively(X, Y, Z, joint_probs):
     - Y: 2d numpy array: [[values], [probabilities]].
     - Z: 2d numpy array: [[values], [probabilities]].
     - joint_probs: 3d numpy array: joint probability of X, Y and Z
-    
+
     Returns:
     TRUE or FALSE
     """
 
     P_X = np.sum(joint_probs, axis=(1, 2))  # Sums over Y and Z dimensions
-    
+
     P_Y = np.sum(joint_probs, axis=(0, 2))  # Sums over X and Z dimensions
-    
+
     P_Z = np.sum(joint_probs, axis=(0, 1))  # Sums over X and Y dimensions
 
     for i in range(len(X[0])):
         for j in range(len(Y[0])):
             joint_p_XY = joint_probs[i, j, :]
             marginal_p_XY = P_X[i] * P_Y[j]
-            
+
             if not np.allclose(joint_p_XY, marginal_p_XY):
                 return False
-            
+
     for i in range(len(X[0])):
         for k in range(len(Z[0])):
             joint_p_XZ = joint_probs[i, :, k]
             marginal_p_XZ = P_X[i] * P_Z[k]
-            
+
             if not np.allclose(joint_p_XZ, marginal_p_XZ):
                 return False
-            
+
     for j in range(len(Y[0])):
         for k in range(len(Z[0])):
             joint_p_YZ = joint_probs[:, j, k]
             marginal_p_YZ = P_Y[j] * P_Z[k]
-            
+
             if not np.allclose(joint_p_YZ, marginal_p_YZ):
                 return False
 
