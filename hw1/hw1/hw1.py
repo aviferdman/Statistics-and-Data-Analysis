@@ -30,11 +30,11 @@ def find_sample_size_nbinom(p=0.03, x=1, alpha=0.85):
     Using NBinom to returns the minimal number of samples required to have requested probability of receiving
     at least x defective products from a production line with a defective rate.
     """
-    n = x  # Start with the minimum number of samples equal to x
-    cdf = stats.nbinom.cdf(x - 1, n, p)  # Calculate the cumulative distribution function for Negative Binomial
-    while(1 - cdf < alpha):  # Check if the probability condition is met
-        n += 1  # Increment the number of samples
-        cdf = stats.nbinom.cdf(x - 1, n, p)  # Recalculate CDF for the updated sample size
+    n = x  # Start with the minimum number of trials
+    cdf = stats.nbinom.cdf(n - x, x, p)  # Calculate CDF for the initial number of trials
+    while(cdf < alpha):  # Ensure we meet or exceed the desired probability
+        n += 1
+        cdf = stats.nbinom.cdf(n - x, x, p)  # Recalculate CDF with the new n
 
     return n  # Return the minimal number of samples
 
@@ -48,26 +48,11 @@ def compare_q1():
     return (n_independent_samples_first_part, n_independent_samples_second_part)
 
 def same_prob(p=0.1, x=5, alpha=0.9):
-    # Raise an exception if alpha is 0 to prevent invalid probability comparisons
-    if alpha == 0:
-        raise ValueError("Alpha cannot be 0. Please provide a non-zero value.")
+    """
+    Calculate the number of independent samples for both Binomial and Negative Binomial distributions 
+    that will give the same probability, and return the sample size for which this happens.
+    """
 
-    n = x  # Start with the minimum number of samples equal to x
-    # Compute probabilities for both distributions
-    prob_binom = 1 - stats.binom.cdf(x - 1, n, p)
-    prob_nbinom = 1 - stats.nbinom.cdf(x - 1, n, p)
-    # Check if the probabilities are close enough and meet the alpha threshold
-    is_same_prob = np.isclose(prob_binom, prob_nbinom, atol=1e-2) and prob_binom > alpha and prob_nbinom > alpha
-
-    # Increment n until the probabilities are close enough
-    while(not is_same_prob):
-        n += 1  # Increase the sample size
-        prob_binom = 1 - stats.binom.cdf(x - 1, n, p)  # Recompute Binomial probability
-        prob_nbinom = 1 - stats.nbinom.cdf(x - 1, n, p)  # Recompute Negative Binomial probability
-        # Reevaluate the condition for probabilities being close
-        is_same_prob = np.isclose(prob_binom, prob_nbinom, atol=1e-2) and prob_binom > alpha and prob_nbinom > alpha
-
-    return n  # Return the sample size where probabilities match
 
 ### Question 2 ###
 
