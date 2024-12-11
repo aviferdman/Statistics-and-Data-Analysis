@@ -190,19 +190,23 @@ def evenBinomFormula(n, p):
     - prob: The output probability.
     """
 
-    explanation = "1. For any a, b -> (a+b)^n = sum(k=0 to n) (n choose k) * a^k * b^(n-k)\n"
-    explanation += "2. let a1 = p and b1 = 1 - p. Then (a1+b1)^n = sum(k=0 to n) (n choose k) * p^k * (1-p)^(n-k)\n"
-    explanation += "3. Even k + Odds k = 1\n"
-    explanation += "4. let a2 = p and b2 = (-1) * (1 - p).\n"
-    explanation += "5. (a2+b2)^n = sum(k=0 to n) (n choose k) * p^k * (-1)(1-p)^(n-k)\n"
-    explanation += "6. sum(k=0 to n) (n choose k) * p^k * (-1)(1-p)^(n-k) = Even k - Odd k\n"
-    explanation += "7. (a2+b2)^n = (p - (1 - p))^n = (2p - 1)^n.\n"
-    explanation += "8. from 7, 6, 3 => 2 * Even k = 1 + (2p - 1)^n\n"
-    explanation += "9. Even k = (1 + (2p - 1)^n) / 2\n"
+    explanation = "1. In a binomial distribution with parameters n (number of trials) and p (probability of success), the probability of k successes is given by:\n"
+    explanation += "   P(k successes) = (n choose k) * p^k * (1-p)^(n-k)\n"
+    explanation += "2. The probability of an even number of successes is the sum of probabilities for all even k values:\n"
+    explanation += "   P(even number of successes) = sum(k even) (n choose k) * p^k * (1-p)^(n-k)\n"
+    explanation += "3. Let us consider the expansion of (p + (1-p))^n and (p - (1-p))^n:\n"
+    explanation += "   - (p + (1-p))^n = sum(k=0 to n) (n choose k) * p^k * (1-p)^(n-k), which equals 1.\n"
+    explanation += "   - (p - (1-p))^n = sum(k=0 to n) (n choose k) * p^k * (-1)^(n-k) * (1-p)^(n-k).\n"
+    explanation += "4. These two expansions can be used to separate the contributions of even and odd k values:\n"
+    explanation += "   - Adding the two expansions gives twice the sum of even terms:\n"
+    explanation += "     (p + (1-p))^n + (p - (1-p))^n = 2 * sum(k even) (n choose k) * p^k * (1-p)^(n-k).\n"
+    explanation += "   - Simplifying: 1 + (2p - 1)^n = 2 * P(even number of successes).\n"
+    explanation += "5. Rearranging the equation gives the final formula:\n"
+    explanation += "   P(even number of successes) = (1 + (1 - 2p)^n) / 2.\n"
 
     print(explanation)
 
-    return (1 + ((2*p - 1)**n)) / 2 # TODO: validate the explanation is for even and not for odd
+    return (1 + ((1 - 2*p)**n)) / 2
 
 ### Question 5 ###
 
@@ -302,7 +306,7 @@ def is_pairwise_collectively(X, Y, Z, joint_probs):
 
     for i in range(len(X[0])):
         for j in range(len(Y[0])):
-            joint_p_XY = joint_probs[i, j, :]
+            joint_p_XY = np.sum(joint_probs[i, j, :])
             marginal_p_XY = P_X[i] * P_Y[j]
 
             if not np.allclose(joint_p_XY, marginal_p_XY):
@@ -310,7 +314,7 @@ def is_pairwise_collectively(X, Y, Z, joint_probs):
 
     for i in range(len(X[0])):
         for k in range(len(Z[0])):
-            joint_p_XZ = joint_probs[i, :, k]
+            joint_p_XZ = np.sum(joint_probs[i, :, k])
             marginal_p_XZ = P_X[i] * P_Z[k]
 
             if not np.allclose(joint_p_XZ, marginal_p_XZ):
@@ -318,7 +322,7 @@ def is_pairwise_collectively(X, Y, Z, joint_probs):
 
     for j in range(len(Y[0])):
         for k in range(len(Z[0])):
-            joint_p_YZ = joint_probs[:, j, k]
+            joint_p_YZ = np.sum(joint_probs[:, j, k])
             marginal_p_YZ = P_Y[j] * P_Z[k]
 
             if not np.allclose(joint_p_YZ, marginal_p_YZ):
