@@ -47,12 +47,20 @@ def compare_q1():
     # Return the tuple of results for both cases
     return (n_independent_samples_first_part, n_independent_samples_second_part)
 
-def same_prob(p=0.1, x=5, alpha=0.9):
+def same_prob(x1=5, p1=0.1, x2=15, p2=0.3):
     """
-    Calculate the number of independent samples for both Binomial and Negative Binomial distributions 
+    Calculate the number of independent samples for both Binomial and Negative Binomial distributions
     that will give the same probability, and return the sample size for which this happens.
     """
-
+    n = max(x1,x2)
+    while True:
+        prob1 = stats.nbinom.cdf(k=n-x1, n=x1, p=p1)
+        prob2 = stats.nbinom.cdf(k=n-x2, n=x2, p=p2)
+        if np.isclose(prob1, prob2, atol=1e-2):
+            return n
+        n += 1
+        if n > 100000:
+            return None
 
 ### Question 2 ###
 
