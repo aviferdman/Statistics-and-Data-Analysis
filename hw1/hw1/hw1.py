@@ -1,6 +1,6 @@
 ###### Your ID ######
-# ID1:
-# ID2:
+# ID1: 324369412
+# ID2: 316420132
 #####################
 
 # imports
@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
+from IPython.display import display, Latex
 
 
 ### Question 1 ###
@@ -47,12 +48,20 @@ def compare_q1():
     # Return the tuple of results for both cases
     return (n_independent_samples_first_part, n_independent_samples_second_part)
 
-def same_prob(p=0.1, x=5, alpha=0.9):
+def same_prob(x1=5, p1=0.1, x2=15, p2=0.3):
     """
-    Calculate the number of independent samples for both Binomial and Negative Binomial distributions 
+    Calculate the number of independent samples for both Binomial and Negative Binomial distributions
     that will give the same probability, and return the sample size for which this happens.
     """
+    n = max(x1,x2)
+    prob1 = stats.nbinom.cdf(k=n-x1, n=x1, p=p1)
+    prob2 = stats.nbinom.cdf(k=n-x2, n=x2, p=p2)
+    while not np.isclose(prob1, prob2, atol=1e-2):
+        n+=1
+        prob1 = stats.nbinom.cdf(k=n-x1, n=x1, p=p1)
+        prob2 = stats.nbinom.cdf(k=n-x2, n=x2, p=p2)
 
+    return n
 
 ### Question 2 ###
 
@@ -190,21 +199,36 @@ def evenBinomFormula(n, p):
     - prob: The output probability.
     """
 
-    explanation = "1. In a binomial distribution with parameters n (number of trials) and p (probability of success), the probability of k successes is given by:\n"
-    explanation += "   P(k successes) = (n choose k) * p^k * (1-p)^(n-k)\n"
-    explanation += "2. The probability of an even number of successes is the sum of probabilities for all even k values:\n"
-    explanation += "   P(even number of successes) = sum(k even) (n choose k) * p^k * (1-p)^(n-k)\n"
-    explanation += "3. Let us consider the expansion of (p + (1-p))^n and (p - (1-p))^n:\n"
-    explanation += "   - (p + (1-p))^n = sum(k=0 to n) (n choose k) * p^k * (1-p)^(n-k), which equals 1.\n"
-    explanation += "   - (p - (1-p))^n = sum(k=0 to n) (n choose k) * p^k * (-1)^(n-k) * (1-p)^(n-k).\n"
-    explanation += "4. These two expansions can be used to separate the contributions of even and odd k values:\n"
-    explanation += "   - Adding the two expansions gives twice the sum of even terms:\n"
-    explanation += "     (p + (1-p))^n + (p - (1-p))^n = 2 * sum(k even) (n choose k) * p^k * (1-p)^(n-k).\n"
-    explanation += "   - Simplifying: 1 + (2p - 1)^n = 2 * P(even number of successes).\n"
-    explanation += "5. Rearranging the equation gives the final formula:\n"
-    explanation += "   P(even number of successes) = (1 + (1 - 2p)^n) / 2.\n"
+    explanation = r"""
+    1. In a binomial distribution with parameters \( n \) (number of trials) and \( p \) (probability of success), the probability of \( k \) successes is given by:
+       \[
+       P( \text{k successes}) = \binom{n}{k} p^k (1-p)^{n-k}
+       \]
+    2. The probability of an even number of successes is the sum of probabilities for all even \( k \) values:
+       \[
+       P(\text{even number of successes}) = \sum_{\text{k even}} \binom{n}{k} p^k (1-p)^(n-k)
+       \]
+    3. Let us consider the expansion of \( (p + (1-p))^n \) and \( (p - (1-p))^n \):
+       \begin{align*}
+       (p + (1-p))^n &= \sum_{k=0}^n \binom{n}{k} p^k (1-p)^{n-k}, \text{ which equals } 1. \\
+       (p - (1-p))^n &= \sum_{k=0}^n \binom{n}{k} p^k (-1)^k (1-p)^{n-k}.
+       \end{align*}
+    4. These two expansions can be used to separate the contributions of even and odd \( k \) values:
+       - Adding the two expansions gives twice the sum of even terms:
+       \[
+       (p + (1-p))^n + (p - (1-p))^n = 2 \sum_{k \text{ even}} \binom{n}{k} p^k (1-p)^{n-k}.
+       \]
+       - Simplifying:
+        \[
+        1 + (2p - 1)^n = 2 P(\text{even number of successes}).
+        \]
+       5. Rearranging the equation gives the final formula:
+       \[
+       P(\text{even number of successes}) = \frac{1 + (1 - 2p)^n}{2}.
+       \]
+       """
 
-    print(explanation)
+    display(Latex(explanation))
 
     return (1 + ((1 - 2*p)**n)) / 2
 
