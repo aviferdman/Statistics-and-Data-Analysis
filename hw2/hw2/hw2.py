@@ -120,7 +120,9 @@ def q4a(mu=75000, sigma=37500, salary=50000):
     The percent of people earn less than 'salary'.
     """
 
-    pass
+    prob = stats.norm.cdf(salary, loc=mu, scale=sigma)
+
+    return prob * 100 # probability to percentage
 
 def q4b(mu=75000, sigma=37500, min_salary=45000, max_salary=65000):
     """
@@ -134,7 +136,13 @@ def q4b(mu=75000, sigma=37500, min_salary=45000, max_salary=65000):
     The percent of people earn between 'min_salary' and 'max_salary'.
     """
 
-    pass
+    min_prob = stats.norm.cdf(min_salary, loc=mu, scale=sigma)
+
+    max_prob = stats.norm.cdf(max_salary, loc=mu, scale=sigma)
+
+    prob = max_prob - min_prob
+
+    return prob * 100 # probability to percentage
 
 def q4c(mu=75000, sigma=37500, salary=85000):
     """
@@ -147,8 +155,9 @@ def q4c(mu=75000, sigma=37500, salary=85000):
     Returns:
     The percent of people earn more than 'salary'.
     """
+    prob = 1 - stats.norm.cdf(salary, loc=mu, scale=sigma)
 
-    pass
+    return prob * 100 # probability to percentage
 
 def q4d(mu=75000, sigma=37500, salary=140000, n_employees=1000):
     """
@@ -162,9 +171,9 @@ def q4d(mu=75000, sigma=37500, salary=140000, n_employees=1000):
     Returns:
     The number of employees in the company that you expect to earn more than 'salary'.
     """
+    prob = 1 - stats.norm.cdf(salary, loc=mu, scale=sigma)
 
-    pass
-
+    return prob * n_employees # probability to employees
 
 ### Question 5 ###
 
