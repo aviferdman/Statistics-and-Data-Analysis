@@ -4,6 +4,7 @@
 #####################
 
 # imports
+import scipy.special as sp
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -186,8 +187,12 @@ def CC_Expected(N=10):
     Returns:
     E(T_N)
     """
-
-    pass
+    harmonic_sum = 0
+    for i in range(1, N + 1):
+        harmonic_sum += 1 / i
+    expected_value = N * harmonic_sum
+    
+    return expected_value
 
 def CC_Variance(N=10):
     """
@@ -198,8 +203,12 @@ def CC_Variance(N=10):
     Returns:
     V(T_N)
     """
+    sum_reciprocal = sum(1 / i for i in range(1, N + 1))
+    sum_reciprocal_squared = sum(1 / (i ** 2) for i in range(1, N + 1))
+    
+    variance = (N ** 2) * sum_reciprocal_squared - N * sum_reciprocal # TODO validate it: https://en.wikipedia.org/wiki/Coupon_collector%27s_problem
 
-    pass
+    return variance
 
 def CC_T_Steps(N=10, n_steps=30):
     """
@@ -210,18 +219,73 @@ def CC_T_Steps(N=10, n_steps=30):
     Returns:
     The probability that T_N > n_steps
     """
-
-    pass
+    # Step 1: Build the transition matrix (size N+1 x N+1)
+    P = np.zeros((N + 1, N + 1))
+    
+    for i in range(N):
+        P[i][i] = i / N  # Stay in the same state
+        P[i][i + 1] = (N - i) / N  # Move to the next state
+    
+    P[N][N] = 1  # Absorbing state (once all coupons are collected)
+    
+    # Step 2: Raise the matrix to the power of n_steps
+    P_n = np.linalg.matrix_power(P, n_steps)
+    
+    # Step 3: Calculate the probability of not reaching the absorbing state
+    # The probability of being in state N after n_steps is P_n[0][N]
+    probability_TN_leq = P_n[0][N]  # Probability T_N <= n_steps
+    probability_TN_greater = 1 - probability_TN_leq  # P(T_N > n_steps)
+    
+    return probability_TN_greater
 
 def CC_S_Steps(N=10, n_steps=30):
     """
-
     Input:
     - N: Number of different coupons.
 
     Returns:
     The probability that S_N > n_steps
     """
+    # Initialize transition matrix for states (i, j)
+    matrix_size = (N + 1) * (N + 2) // 2
+    P = np.zeros((matrix_size, matrix_size))
+    
+    # Map (i,j) to matrix index
+    def state_index(i, j):
+        return (i * (i + 1)) // 2 + j
+    
+    # Fill in transition probabilities
+    for i in range(N + 1):
+        for j in range(i + 1):  # j <= i
+            current_state = state_index(i, j)
+            
+            if i == 0 and j == 0:
+                # (0,0) -> (1,0) with probability 1
+                P[current_state][state_index(1, 0)] = 1
+            elif i < N:
+                # (i,j) -> (i+1,j) with probability (N-i)/N
+                P[current_state][state_index(i + 1, j)] = (N - i) / N
+                # (i,j) -> (i,j+1) with probability (i-j)/N
+                P[current_state][state_index(i, j + 1)] = (i - j) / N
+                # (i,j) -> (i,j) with probability j/N
+                P[current_state][current_state] = j / N
+            else:
+                if j < N:
+                    # (N,j) -> (N,j + 1) with probability (N-j)/N
+                    P[current_state][state_index(i, j + 1)] = (N - j) / N
+                    # (N,j) -> (N,j) with probability j/N
+                    P[current_state][current_state] = j / N
+    
+    P[state_index(N, N)][state_index(N, N)] = 1
+    
+    # Raise matrix to the power of n_steps
+    P_n = np.linalg.matrix_power(P, n_steps)
 
-    pass
+    # Calculate probability of not reaching absorbing state (N,N)
+    start_state = state_index(0, 0)
+    absorbing_state = state_index(N, N)
+    probability_SN_leq = P_n[start_state][absorbing_state]
+    probability_SN_greater = 1 - probability_SN_leq
+
+    return probability_SN_greater
 
